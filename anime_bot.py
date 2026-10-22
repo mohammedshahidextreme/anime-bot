@@ -159,6 +159,7 @@ def post_item(item):
     if not channel:
         sys.exit("TELEGRAM_CHANNEL .env me set nahi hai (jaise @mychannel).")
     caption = build_caption(item)
+    markup = {"inline_keyboard": [[{"text": "Website", "url": "https://sugoix.shop/"}]]}
     cover = item["media"].get("coverImage") or {}
     poster = cover.get("extraLarge") or cover.get("large")
 
@@ -167,12 +168,14 @@ def post_item(item):
         res = tg("sendPhoto", {
             "chat_id": channel, "photo": poster,
             "caption": caption, "parse_mode": "HTML",
+            "reply_markup": markup,
         })
         if not res.get("ok"):
             print("[tg] photo fail:", res.get("description"))
     if not res.get("ok"):  # fallback: text-only post
         res = tg("sendMessage", {
             "chat_id": channel, "text": caption, "parse_mode": "HTML",
+            "reply_markup": markup,
         })
     return bool(res.get("ok")), res
 
