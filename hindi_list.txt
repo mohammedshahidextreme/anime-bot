@@ -27,7 +27,6 @@ weekly 2026-08-30 | Mushoku Tensei Jobless Reincarnation Season 3
 
 # ===== NETFLIX (ek saath poora season aata hai, weekly nahi) =====
 # Jab koi naya season aaye, ek baar wali line jodo, jaise:
-# 2026-11-05 | Naam
-
+# weekly 2026-10-30 | JoJo's Bizarre Adventure: Steel Ball Run 
 # ===== CRUNCHYROLL (weekly ya batch pakka nahi) =====
 # 2026-10-10 | Black Clover
