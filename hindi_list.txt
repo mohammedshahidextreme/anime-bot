@@ -1,18 +1,33 @@
-# Hindi dub wale anime. Ek line = ek anime ka naam (English ya Romaji).
-# Naya anime jodna ho to bas ek nayi line likho. # wali line bot ignore karta hai.
-# Naam ke saare shabd AniList ke title me hone chahiye (capital/small farak nahi padta).
+# INDIA me Hindi dub release par post. Ek line = ek anime.
+# weekly 2026-10-07 19:30 | Naam  -> har hafte usi din/time par
+# 2026-10-28 19:30 | Naam         -> sirf ek baar
+# Time na likho to us din raat 12 baje post hogi. Dub khatam ho to line hata do.
 
-# Crunchyroll (Hindi/Tamil/Telugu simuldub)
-Overgeared
-Black Torch
-Black Clover
-Apothecary Diaries
-PSYREN
-Re:ZERO
+# ===== CRUNCHYROLL (Hindi weekly, pakka) =====
+weekly 2026-09-27 | Overgeared
+weekly 2026-10-06 | The Laid-Off Cheat-Granting Mage Enjoys a Second Lease on Life
+weekly 2026-10-07 | Re:ZERO Starting Life in Another World Season 4
+weekly 2026-10-17 | A Wild Last Boss Appeared Season 2
+weekly 2026-10-23 | The Apothecary Diaries Season 3
+weekly 2026-10-25 | Super Timid Noble Girl Cunning Fiance
+weekly 2026-10-26 | PSYREN
+weekly 2026-10-28 | The Detective Is Already Dead Season 2
+weekly 2026-10-29 | The Iceblade Sorcerer Shall Rule the World II
+weekly 2026-10-30 | Firefly Wedding
+weekly 2026-08-29 | Black Torch
+weekly 2026-08-30 | Mushoku Tensei Jobless Reincarnation Season 3
 
-# Anime Times (Prime Video) - abhi chalte hue
-Reincarnated as a Slime
-Exiled Heavy Knight
-Grand Blue
-Frontier Lord
-Reincarnated Aristocrat Appraisal Skill
+# ===== ANIME TIMES / PRIME VIDEO (AIRING, par weekly hai ya nahi pakka nahi) =====
+# Pakka karke # hata do:
+# weekly 2026-09-17 | The Frontier Lord Begins with Zero Subjects
+# weekly 2026-09-28 | Reincarnated as an Aristocrat Appraisal Skill Season 3
+# weekly 2026-08-31 | Grand Blue Dreaming Season 3
+# weekly 2026-08-29 | The Exiled Heavy Knight Knows How to Game the System
+# weekly 2026-06-02 | That Time I Got Reincarnated as a Slime Season 4
+
+# ===== NETFLIX (ek saath poora season aata hai, weekly nahi) =====
+# Jab koi naya season aaye, ek baar wali line jodo, jaise:
+# 2026-11-05 | Naam
+
+# ===== CRUNCHYROLL (weekly ya batch pakka nahi) =====
+# 2026-10-10 | Black Clover
