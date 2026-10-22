@@ -14,6 +14,7 @@ Commands:
   python anime_bot.py once       # ek baar check karke nayi posts bhejta hai
   python anime_bot.py run        # hamesha chalta rahe, har POLL_MINUTES par check
 """
+import datetime
 import html
 import json
 import os
@@ -154,11 +155,11 @@ def build_caption(item):
     return caption[:1024]  # Telegram photo caption limit
 
 
-def post_item(item):
+def post_item(item, caption=None):
     channel = env("TELEGRAM_CHANNEL")
     if not channel:
         sys.exit("TELEGRAM_CHANNEL .env me set nahi hai (jaise @mychannel).")
-    caption = build_caption(item)
+    caption = caption or build_caption(item)
     markup = {"inline_keyboard": [[{"text": "Website", "url": "https://sugoix.shop/"}]]}
     cover = item["media"].get("coverImage") or {}
     poster = cover.get("extraLarge") or cover.get("large")
@@ -178,6 +179,126 @@ def post_item(item):
             "reply_markup": markup,
         })
     return bool(res.get("ok")), res
+
+
+# ---------- Hindi dub schedule (India release) ----------
+IST = datetime.timezone(datetime.timedelta(hours=5, minutes=30))
+SPEC_RE = re.compile(
+    r"^(weekly\s+)?(\d{4}-\d{2}-\d{2})(?:\s+(\d{1,2}:\d{2}))?(?:\s+x(\d+))?$", re.I)
+
+SEARCH_QUERY = """
+query ($q: String) {
+  Page(perPage: 5) {
+    media(search: $q, type: ANIME, sort: SEARCH_MATCH) {
+      id siteUrl isAdult episodes averageScore genres
+      title { romaji english native }
+      coverImage { extraLarge large }
+    }
+  }
+}
+"""
+
+
+def load_hindi_list():
+    """hindi_list.txt ki har line: [weekly] YYYY-MM-DD [HH:MM] [xN] | Anime naam"""
+    path = os.path.join(BASE, "hindi_list.txt")
+    try:
+        with open(path, encoding="utf-8") as f:
+            lines = [ln.strip() for ln in f]
+    except FileNotFoundError:
+        return []
+    entries = []
+    for ln in lines:
+        if not ln or ln.startswith("#") or "|" not in ln:
+            continue
+        spec, name = [x.strip() for x in ln.split("|", 1)]
+        m = SPEC_RE.match(spec)
+        if not m or not name:
+            print("[warn] list ki line samajh nahi aayi:", ln)
+            continue
+        try:
+            hh, mm = (m.group(3) or "0:0").split(":")
+            start = datetime.datetime.strptime(m.group(2), "%Y-%m-%d").replace(
+                hour=int(hh), minute=int(mm), tzinfo=IST)
+        except ValueError:
+            print("[warn] date/time galat:", ln)
+            continue
+        weekly = bool(m.group(1))
+        count = int(m.group(4)) if m.group(4) else (None if weekly else 1)
+        entries.append((name, start, weekly, count))
+    return entries
+
+
+def hindi_due(entries, now, window_hours=48):
+    """Jin releases ka time aa chuka hai (aur 48 ghante se purana nahi)."""
+    due = []
+    for name, start, weekly, count in entries:
+        n = 0
+        while True:
+            when = start + datetime.timedelta(days=7 * n)
+            if when > now or (count is not None and n >= count):
+                break
+            if (now - when).total_seconds() <= window_hours * 3600:
+                due.append((f"{name}|{when:%Y-%m-%d}", name))
+            n += 1
+            if not weekly:
+                break
+    return due
+
+
+def find_media(name):
+    res = http_json(ANILIST, {"query": SEARCH_QUERY, "variables": {"q": name}})
+    try:
+        for m in res["data"]["Page"]["media"]:
+            if not m.get("isAdult"):
+                return m
+    except Exception:
+        pass
+    return None
+
+
+def build_hindi_caption(name, media):
+    media = media or {}
+    t = media.get("title") or {}
+    title = t.get("english") or t.get("romaji") or name
+    score = media.get("averageScore")
+    rating = f"{score / 10:.1f}/10" if score else "N/A"
+    genres = media.get("genres") or []
+    lines = [
+        "🇮🇳 <b>NEW HINDI DUB</b>",
+        "",
+        f"<b>{html.escape(title)}</b>",
+        f"🗣 Language: {html.escape(env('ANIME_LANGUAGE', 'Hindi'))}",
+        f"⭐ Rating: {rating}",
+        f"🎭 Category: {html.escape(', '.join(genres) if genres else 'N/A')}",
+    ]
+    tags = " ".join(tag(g) for g in genres)
+    if tags:
+        lines += ["", tags]
+    return "\n".join(lines)[:1024]
+
+
+def hindi_once():
+    state = load_state()
+    now = datetime.datetime.now(IST)
+    window = float(env("HINDI_WINDOW_HOURS", "48"))
+    posted = list(state.get("hindi_posted", []))
+    due = [d for d in hindi_due(load_hindi_list(), now, window) if d[0] not in posted]
+    print(f"[hindi] {len(due)} post due")
+    failed = False
+    for key, name in due:
+        media = find_media(name) or {}
+        ok, res = post_item({"media": media}, build_hindi_caption(name, media))
+        if ok:
+            posted.append(key)
+            print(f"[post] {name}")
+        else:
+            failed = True
+            print(f"[error] {name}: {res.get('description')}")
+        time.sleep(3)
+    state["hindi_posted"] = posted[-2000:]
+    save_state(state)
+    return not failed
 
 
 # ---------- AniList ----------
@@ -219,6 +340,8 @@ def save_state(state):
 
 # ---------- main logic ----------
 def once():
+    if env("HINDI_ONLY", "1") == "1":  # India me Hindi dub release par post
+        return hindi_once()
     state = load_state()
     now = int(time.time())
     last = state.get("last_check")
