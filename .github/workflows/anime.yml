@@ -31,7 +31,7 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHANNEL: ${{ secrets.TELEGRAM_CHANNEL }}
-          ANIME_LANGUAGE: "Japanese (Sub)"
+          ANIME_LANGUAGE: "English, Hindi, Tamil, Telugu, Japanese (Sub)"
         run: python anime_bot.py ${{ github.event.inputs.mode || 'once' }}
       - name: Save state
         if: always()
