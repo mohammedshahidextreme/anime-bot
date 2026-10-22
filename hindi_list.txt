@@ -1,0 +1,18 @@
+# Hindi dub wale anime. Ek line = ek anime ka naam (English ya Romaji).
+# Naya anime jodna ho to bas ek nayi line likho. # wali line bot ignore karta hai.
+# Naam ke saare shabd AniList ke title me hone chahiye (capital/small farak nahi padta).
+
+# Crunchyroll (Hindi/Tamil/Telugu simuldub)
+Overgeared
+Black Torch
+Black Clover
+Apothecary Diaries
+PSYREN
+Re:ZERO
+
+# Anime Times (Prime Video) - abhi chalte hue
+Reincarnated as a Slime
+Exiled Heavy Knight
+Grand Blue
+Frontier Lord
+Reincarnated Aristocrat Appraisal Skill
