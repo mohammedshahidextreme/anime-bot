@@ -7,6 +7,7 @@
 #   weekly 2026-10-23 20:30 ep1 | Naam        -> post me Episode 1, agle hafte Episode 2...
 #   2026-10-23 20:00 ep5 per2 | Naam          -> ek saath 2 episode (Episodes 5-6)
 #   2026-10-28 19:30 | Naam                   -> sirf ek baar
+#   daily 2026-10-16 21:30 ep1 per2 | Naam    -> roz, ek din me 2 episode (Muse India jaise)
 # Dub khatam ho jaye to uski line hata do ya aage # laga do.
 # Source: animemirchi.com (23 Oct 2026)
 
@@ -15,6 +16,10 @@
 # @dryrun likha ho to bot sirf log me dikhata hai, post nahi karta (pehle jaanch ke liye)
 # =========================================================
 @dryrun
+# @skip Naam  -> bot us anime ko auto list se hata deta hai (jaise dub khatam ho gaya par site ne update nahi kiya)
+@skip Campfire Cooking
+@source https://animemirchi.com/muse-india-hindi-dubbed-anime-list/
+@source https://animemirchi.com/ani-one-india-hindi-dubbed-anime-list/
 @source https://animemirchi.com/hindi-dubbed-anime-on-netflix-india/
 @source https://animemirchi.com/crunchyroll-fall-2026-hindi-tamil-telugu-lineup/
 @source https://animemirchi.com/crunchyroll-summer-2026-hindi-tamil-telugu-lineup/
