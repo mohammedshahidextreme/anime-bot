@@ -184,7 +184,7 @@ def post_item(item, caption=None):
 # ---------- Hindi dub schedule (India release) ----------
 IST = datetime.timezone(datetime.timedelta(hours=5, minutes=30))
 SPEC_RE = re.compile(
-    r"^(weekly\s+)?(\d{4}-\d{2}-\d{2})(?:\s+(\d{1,2}:\d{2}))?(?:\s+x(\d+))?$", re.I)
+    r"^(weekly\s+)?(\d{4}-\d{2}-\d{2})(?:\s+(\d{1,2}:\d{2}))?(?:\s+ep(\d+))?(?:\s+per(\d+))?(?:\s+x(\d+))?$", re.I)
 
 SEARCH_QUERY = """
 query ($q: String) {
@@ -224,22 +224,25 @@ def load_hindi_list():
             print("[warn] date/time galat:", ln)
             continue
         weekly = bool(m.group(1))
-        count = int(m.group(4)) if m.group(4) else (None if weekly else 1)
-        entries.append((name, start, weekly, count))
+        ep0 = int(m.group(4)) if m.group(4) else None
+        per = max(1, int(m.group(5))) if m.group(5) else 1
+        count = int(m.group(6)) if m.group(6) else (None if weekly else 1)
+        entries.append((name, start, weekly, count, ep0, per))
     return entries
 
 
 def hindi_due(entries, now, window_hours=48):
     """Jin releases ka time aa chuka hai (aur 48 ghante se purana nahi)."""
     due = []
-    for name, start, weekly, count in entries:
+    for name, start, weekly, count, ep0, per in entries:
         n = 0
         while True:
             when = start + datetime.timedelta(days=7 * n)
             if when > now or (count is not None and n >= count):
                 break
             if (now - when).total_seconds() <= window_hours * 3600:
-                due.append((f"{name}|{when:%Y-%m-%d}", name))
+                due.append((f"{name}|{when:%Y-%m-%d}", name,
+                            (ep0 + n * per, ep0 + n * per + per - 1) if ep0 else None))
             n += 1
             if not weekly:
                 break
@@ -257,7 +260,7 @@ def find_media(name):
     return None
 
 
-def build_hindi_caption(name, media):
+def build_hindi_caption(name, media, ep=None):
     media = media or {}
     t = media.get("title") or {}
     title = t.get("english") or t.get("romaji") or name
@@ -268,6 +271,8 @@ def build_hindi_caption(name, media):
         "🇮🇳 <b>NEW HINDI DUB</b>",
         "",
         f"<b>{html.escape(title)}</b>",
+    ] + ([f"🎞 Episode {ep[0]}" if ep[0] == ep[1] else f"🎞 Episodes {ep[0]}-{ep[1]}"]
+         if ep else []) + [
         f"🗣 Language: {html.escape(env('ANIME_LANGUAGE', 'Hindi'))}",
         f"⭐ Rating: {rating}",
         f"🎭 Category: {html.escape(', '.join(genres) if genres else 'N/A')}",
@@ -286,9 +291,9 @@ def hindi_once():
     due = [d for d in hindi_due(load_hindi_list(), now, window) if d[0] not in posted]
     print(f"[hindi] {len(due)} post due")
     failed = False
-    for key, name in due:
+    for key, name, ep in due:
         media = find_media(name) or {}
-        ok, res = post_item({"media": media}, build_hindi_caption(name, media))
+        ok, res = post_item({"media": media}, build_hindi_caption(name, media, ep))
         if ok:
             posted.append(key)
             print(f"[post] {name}")
