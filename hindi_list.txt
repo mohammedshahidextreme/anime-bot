@@ -1,11 +1,20 @@
 # INDIA me Hindi dub release par post (time India/IST). Ek line = ek anime.
-# weekly 2026-10-07 19:30 | Naam      -> har hafte usi din/time par
-# weekly 2026-10-10 20:30 x10 | Naam  -> har hafte, kul 10 post
-# 2026-10-28 19:30 | Naam             -> sirf ek baar
+# Jis line ke aage # hai, bot use padhta hi nahi.
+#
+# Likhne ka tareeka (example):
+#   weekly 2026-10-07 19:30 | Naam            -> har hafte usi din/time par
+#   weekly 2026-10-10 20:30 x10 | Naam        -> har hafte, kul 10 post
+#   weekly 2026-10-23 20:30 ep1 | Naam        -> post me Episode 1, agle hafte Episode 2...
+#   2026-10-23 20:00 ep5 per2 | Naam          -> ek saath 2 episode (Episodes 5-6)
+#   2026-10-28 19:30 | Naam                   -> sirf ek baar
 # Dub khatam ho jaye to uski line hata do ya aage # laga do.
-# Source: animemirchi.com (22 Oct 2026 tak)
+# Source: animemirchi.com (23 Oct 2026)
 
-# ===== CRUNCHYROLL (Hindi weekly) =====
+# =========================================================
+# 1. JO ANIME WEEKLY AA RAHE HAIN (ACTIVE)
+# =========================================================
+
+# --- CRUNCHYROLL ---
 weekly 2026-07-29 22:50 | Tomb Raider King
 weekly 2026-07-31 20:30 | That Time I Got Reincarnated as a Slime Season 4
 weekly 2026-08-07 21:30 | The Elusive Samurai Season 2
@@ -18,15 +27,15 @@ weekly 2026-10-06 21:00 | The Laid-Off Cheat-Granting Mage Enjoys a Second Lease
 weekly 2026-10-07 19:30 | Re:ZERO Starting Life in Another World Season 4
 weekly 2026-10-10 20:30 x10 | Black Clover
 weekly 2026-10-17 19:00 | A Wild Last Boss Appeared Season 2
-weekly 2026-10-23 20:30 | The Apothecary Diaries Season 3
-weekly 2026-10-24 20:30 | Black Clover 2nd Season
-weekly 2026-10-25 20:00 | Super Timid Noble Girl Cunning Fiance
-weekly 2026-10-26 20:00 | PSYREN
-weekly 2026-10-28 19:00 | The Detective Is Already Dead Season 2
-weekly 2026-10-29 22:30 | The Iceblade Sorcerer Shall Rule the World II
-weekly 2026-10-30 21:30 | Firefly Wedding
+weekly 2026-10-23 20:30 ep1 | The Apothecary Diaries Season 3
+weekly 2026-10-24 20:30 ep1 | Black Clover 2nd Season
+weekly 2026-10-25 20:00 ep1 | Super Timid Noble Girl Cunning Fiance
+weekly 2026-10-26 20:00 ep1 | PSYREN
+weekly 2026-10-28 19:00 ep1 | The Detective Is Already Dead Season 2
+weekly 2026-10-29 22:30 ep1 | The Iceblade Sorcerer Shall Rule the World II
+weekly 2026-10-30 21:30 ep1 | Firefly Wedding
 
-# ===== NETFLIX (Hindi weekly) =====
+# --- NETFLIX ---
 weekly 2026-07-08 22:00 | Thunder 3
 weekly 2026-07-16 21:30 | Chainsmoker Cat
 weekly 2026-09-25 13:30 | Steel Ball Run JoJo's Bizarre Adventure
@@ -34,11 +43,28 @@ weekly 2026-10-01 21:00 | The Ramparts of Ice Season 2
 weekly 2026-10-03 22:30 | Ranma 1/2 Season 3
 weekly 2026-10-04 13:30 | Blue Box Season 2
 
-# ===== NETFLIX aane wale (date/time pakka hone par # hata kar time likho) =====
-# 2026-10-25 | My Happy Marriage
-# 2026-11-26 | Fool Night
-
-# ===== ANIME TIMES / PRIME VIDEO (AIRING, par time aur weekly pakka nahi) =====
+# --- ANIME TIMES / PRIME VIDEO (AIRING hain, par time aur weekly pakka nahi) ---
+# Time pata chale to # hata kar time likho, jaise: weekly 2026-09-17 21:00 | ...
 # weekly 2026-09-17 | The Frontier Lord Begins with Zero Subjects
 # weekly 2026-09-28 | Reincarnated as an Aristocrat Appraisal Skill Season 3
 # weekly 2026-08-31 | Grand Blue Dreaming Season 3
+
+# =========================================================
+# 2. AANE WALE (date ya time pakka nahi, pakka hone par # hata do)
+# =========================================================
+# 2026-10-25 20:00 | My Happy Marriage
+# 2026-11-26 | Fool Night
+
+# =========================================================
+# 3. PURANE / KHATAM (sirf yaad ke liye, bot inhe nahi padhta)
+# Naya season aaye to line banao: weekly YYYY-MM-DD HH:MM ep1 | Naam
+# =========================================================
+# Crunchyroll: Demon Slayer, Jujutsu Kaisen, My Hero Academia, Solo Leveling,
+# Kaiju No. 8, Chainsaw Man, SPY x FAMILY, Dr. STONE, Mashle, Frieren,
+# Shangri-La Frontier, Blue Lock, Wind Breaker, Wistoria, Haikyu!!, Mob Psycho 100,
+# One Punch Man, Horimiya, KonoSuba, The Rising of the Shield Hero, Rent-a-Girlfriend,
+# Tower of God, Tsukimichi, The Daily Life of the Immortal King, Miss Kobayashi's Dragon Maid,
+# Zom 100, My Dress-Up Darling, Vinland Saga, Dragon Ball Super, The Apothecary Diaries
+# Netflix: Naruto, Naruto Shippuden, One Piece, Pokemon, Baki, Baki Hanma, Record of Ragnarok,
+# Delicious in Dungeon, Cyberpunk Edgerunners, Castlevania, Blood of Zeus, Lookism,
+# Death Note, Monster, Hunter x Hunter
