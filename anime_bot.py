@@ -231,6 +231,108 @@ def load_hindi_list():
     return entries
 
 
+# ---------- Auto: websites se Hindi dub schedule padhna ----------
+MONTHS = {m: i + 1 for i, m in enumerate(
+    ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"])}
+DAYS = {d: i for i, d in enumerate(["mon", "tue", "wed", "thu", "fri", "sat", "sun"])}
+DATE_RE = re.compile(r"\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.? (\d{1,2}), (\d{4})")
+SCHED_RE = re.compile(
+    r"\b(Mon|Tue|Wed|Thu|Fri|Sat|Sun)[a-z]*\s*[\u2022\u00b7\-]?\s*(\d{1,2}):(\d{2})\s*(AM|PM)", re.I)
+
+
+def load_hindi_sources():
+    """hindi_list.txt ki '@source URL' aur '@dryrun' lines."""
+    path = os.path.join(BASE, "hindi_list.txt")
+    try:
+        with open(path, encoding="utf-8") as f:
+            lines = [ln.strip() for ln in f]
+    except FileNotFoundError:
+        return [], False
+    sources = [ln.split(None, 1)[1].strip() for ln in lines
+               if ln.lower().startswith("@source ") and len(ln.split(None, 1)) == 2]
+    dry = any(ln.lower().startswith("@dryrun") for ln in lines)
+    return sources, dry
+
+
+def fetch_page(url):
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (anime-channel-bot)"})
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            return r.read().decode("utf-8", "replace")
+    except Exception as e:
+        print("[auto] page nahi khuli:", url, str(e)[:100])
+        return ""
+
+
+def _cell(c):
+    return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", c))).strip()
+
+
+def _clean_name(n):
+    n = re.sub(r"\(also in[^)]*\)", "", n, flags=re.I)
+    n = re.sub(r"\{[^}]*\}", "", n)
+    return re.sub(r"\s+", " ", n).strip(" -\u2013\u2022*")
+
+
+def parse_auto_rows(page):
+    """Table ki wo rows jo abhi weekly chal rahi/aane wali hain (premiere date + din/time)."""
+    out = []
+    for row in re.findall(r"<tr[^>]*>(.*?)</tr>", page, re.S | re.I):
+        cells = [_cell(c) for c in re.findall(r"<t[dh][^>]*>(.*?)</t[dh]>", row, re.S | re.I)]
+        if len(cells) < 3:
+            continue
+        text = " | ".join(cells)
+        if re.search(r"finished|removed|batch|ended", text, re.I):
+            continue
+        dates = DATE_RE.findall(text)
+        sm = SCHED_RE.search(text)
+        if len(dates) != 1 or not sm:  # ya date nahi, ya khatam ho chuka (2 date)
+            continue
+        name = None
+        for c in cells:
+            if re.fullmatch(r"[\d\W]*", c) or DATE_RE.search(c) or SCHED_RE.search(c):
+                continue
+            if re.fullmatch(r"(airing|tba)", c, re.I):
+                continue
+            if re.fullmatch(r"(hindi|tamil|telugu|and|[, &])+", c, re.I):
+                continue
+            name = _clean_name(c)
+            break
+        if not name or re.search(r"\bEp\.?\s*\d+\s*-\s*\d+", name, re.I):
+            continue  # batch / episode range wali row
+        mon, day, year = dates[0]
+        hh = int(sm.group(2)) % 12 + (12 if sm.group(4).upper() == "PM" else 0)
+        start = datetime.datetime(int(year), MONTHS[mon.lower()], int(day), hh,
+                                  int(sm.group(3)), tzinfo=IST)
+        if start.weekday() != DAYS[sm.group(1).lower()]:
+            print(f"[auto] din match nahi hua, chhoda: {name}")
+            continue
+        ep0 = None if re.search(r"cour\s*[2-9]|part\s*[2-9]", name, re.I) else 1
+        cm = re.search(r"\((\d+)\s*Eps?\b", text, re.I)
+        out.append((name, start, True, int(cm.group(1)) if cm else None, ep0, 1))
+    return out
+
+
+def collect_entries():
+    entries = load_hindi_list()
+    sources, dry = load_hindi_sources()
+    if not sources:
+        return entries
+    auto, seen = [], set()
+    for url in sources:
+        for e in parse_auto_rows(fetch_page(url)):
+            k = (e[0].lower(), e[1])
+            if k not in seen:
+                seen.add(k)
+                auto.append(e)
+    print(f"[auto] {len(sources)} page se {len(auto)} anime mile" + (" (DRYRUN)" if dry else ""))
+    if dry:
+        for n, st, w, c, ep, per in auto:
+            print(f"   - {n[:50]} | {st:%a %H:%M} se, ep{ep or '-'}" + (f" x{c}" if c else ""))
+        return entries  # dryrun: auto wale post nahi honge
+    return entries + auto
+
+
 def hindi_due(entries, now, window_hours=48):
     """Jin releases ka time aa chuka hai (aur 48 ghante se purana nahi)."""
     due = []
@@ -288,7 +390,7 @@ def hindi_once():
     now = datetime.datetime.now(IST)
     window = float(env("HINDI_WINDOW_HOURS", "48"))
     posted = list(state.get("hindi_posted", []))
-    due = [d for d in hindi_due(load_hindi_list(), now, window) if d[0] not in posted]
+    due = [d for d in hindi_due(collect_entries(), now, window) if d[0] not in posted]
     print(f"[hindi] {len(due)} post due")
     failed = False
     for key, name, ep in due:
