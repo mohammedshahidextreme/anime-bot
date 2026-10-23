@@ -11,22 +11,31 @@
 # Source: animemirchi.com (23 Oct 2026)
 
 # =========================================================
+# AUTO: bot khud in pages se schedule padhta hai (nayi lines tumhe nahi likhni)
+# @dryrun likha ho to bot sirf log me dikhata hai, post nahi karta (pehle jaanch ke liye)
+# =========================================================
+@dryrun
+@source https://animemirchi.com/hindi-dubbed-anime-on-netflix-india/
+@source https://animemirchi.com/crunchyroll-fall-2026-hindi-tamil-telugu-lineup/
+@source https://animemirchi.com/crunchyroll-summer-2026-hindi-tamil-telugu-lineup/
+
+# =========================================================
 # 1. JO ANIME WEEKLY AA RAHE HAIN (ACTIVE)
 # =========================================================
 
 # --- CRUNCHYROLL ---
-weekly 2026-07-29 22:50 | Tomb Raider King
+weekly 2026-07-29 22:50 ep1 | Tomb Raider King
 weekly 2026-07-31 20:30 | That Time I Got Reincarnated as a Slime Season 4
-weekly 2026-08-07 21:30 | The Elusive Samurai Season 2
-weekly 2026-08-13 21:30 | The Exiled Heavy Knight Knows How to Game the System
-weekly 2026-08-15 21:30 | Jaadugar A Witch in Mongolia
-weekly 2026-08-29 18:30 | Black Torch
-weekly 2026-08-30 16:30 | Mushoku Tensei Jobless Reincarnation Season 3
-weekly 2026-09-27 20:00 | Overgeared
-weekly 2026-10-06 21:00 | The Laid-Off Cheat-Granting Mage Enjoys a Second Lease on Life
+weekly 2026-08-07 21:30 ep1 | The Elusive Samurai Season 2
+weekly 2026-08-13 21:30 ep1 | The Exiled Heavy Knight Knows How to Game the System
+weekly 2026-08-15 21:30 ep1 | Jaadugar A Witch in Mongolia
+weekly 2026-08-29 18:30 ep1 | Black Torch
+weekly 2026-08-30 16:30 ep1 | Mushoku Tensei Jobless Reincarnation Season 3
+weekly 2026-09-27 20:00 ep1 | Overgeared
+weekly 2026-10-06 21:00 ep1 | The Laid-Off Cheat-Granting Mage Enjoys a Second Lease on Life
 weekly 2026-10-07 19:30 | Re:ZERO Starting Life in Another World Season 4
-weekly 2026-10-10 20:30 x10 | Black Clover
-weekly 2026-10-17 19:00 | A Wild Last Boss Appeared Season 2
+weekly 2026-10-10 20:30 ep1 x10 | Black Clover
+weekly 2026-10-17 19:00 ep1 | A Wild Last Boss Appeared Season 2
 weekly 2026-10-23 20:30 ep1 | The Apothecary Diaries Season 3
 weekly 2026-10-24 20:30 ep1 | Black Clover 2nd Season
 weekly 2026-10-25 20:00 ep1 | Super Timid Noble Girl Cunning Fiance
@@ -39,9 +48,9 @@ weekly 2026-10-30 21:30 ep1 | Firefly Wedding
 weekly 2026-07-08 22:00 | Thunder 3
 weekly 2026-07-16 21:30 | Chainsmoker Cat
 weekly 2026-09-25 13:30 | Steel Ball Run JoJo's Bizarre Adventure
-weekly 2026-10-01 21:00 | The Ramparts of Ice Season 2
-weekly 2026-10-03 22:30 | Ranma 1/2 Season 3
-weekly 2026-10-04 13:30 | Blue Box Season 2
+weekly 2026-10-01 21:00 ep1 | The Ramparts of Ice Season 2
+weekly 2026-10-03 22:30 ep1 | Ranma 1/2 Season 3
+weekly 2026-10-04 13:30 ep1 | Blue Box Season 2
 
 # --- ANIME TIMES / PRIME VIDEO (AIRING hain, par time aur weekly pakka nahi) ---
 # Time pata chale to # hata kar time likho, jaise: weekly 2026-09-17 21:00 | ...
