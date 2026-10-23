@@ -1,34 +1,44 @@
-# INDIA me Hindi dub release par post. Ek line = ek anime.
-# weekly 2026-10-07 19:30 | Naam  -> har hafte usi din/time par
-# 2026-10-28 19:30 | Naam         -> sirf ek baar
-# Time na likho to us din raat 12 baje post hogi. Dub khatam ho to line hata do.
+# INDIA me Hindi dub release par post (time India/IST). Ek line = ek anime.
+# weekly 2026-10-07 19:30 | Naam      -> har hafte usi din/time par
+# weekly 2026-10-10 20:30 x10 | Naam  -> har hafte, kul 10 post
+# 2026-10-28 19:30 | Naam             -> sirf ek baar
+# Dub khatam ho jaye to uski line hata do ya aage # laga do.
+# Source: animemirchi.com (22 Oct 2026 tak)
 
-# ===== CRUNCHYROLL (Hindi weekly, pakka) =====
-weekly 2026-09-27 | Overgeared
-weekly 2026-10-06 | The Laid-Off Cheat-Granting Mage Enjoys a Second Lease on Life
-weekly 2026-10-07 | Re:ZERO Starting Life in Another World Season 4
-weekly 2026-10-17 | A Wild Last Boss Appeared Season 2
-weekly 2026-10-23 | The Apothecary Diaries Season 3
-weekly 2026-10-25 | Super Timid Noble Girl Cunning Fiance
-weekly 2026-10-26 | PSYREN
-weekly 2026-10-28 | The Detective Is Already Dead Season 2
-weekly 2026-10-29 | The Iceblade Sorcerer Shall Rule the World II
-weekly 2026-10-30 | Firefly Wedding
-weekly 2026-08-29 | Black Torch
-weekly 2026-08-30 | Mushoku Tensei Jobless Reincarnation Season 3
+# ===== CRUNCHYROLL (Hindi weekly) =====
+weekly 2026-07-29 22:50 | Tomb Raider King
+weekly 2026-07-31 20:30 | That Time I Got Reincarnated as a Slime Season 4
+weekly 2026-08-07 21:30 | The Elusive Samurai Season 2
+weekly 2026-08-13 21:30 | The Exiled Heavy Knight Knows How to Game the System
+weekly 2026-08-15 21:30 | Jaadugar A Witch in Mongolia
+weekly 2026-08-29 18:30 | Black Torch
+weekly 2026-08-30 16:30 | Mushoku Tensei Jobless Reincarnation Season 3
+weekly 2026-09-27 20:00 | Overgeared
+weekly 2026-10-06 21:00 | The Laid-Off Cheat-Granting Mage Enjoys a Second Lease on Life
+weekly 2026-10-07 19:30 | Re:ZERO Starting Life in Another World Season 4
+weekly 2026-10-10 20:30 x10 | Black Clover
+weekly 2026-10-17 19:00 | A Wild Last Boss Appeared Season 2
+weekly 2026-10-23 20:30 | The Apothecary Diaries Season 3
+weekly 2026-10-24 20:30 | Black Clover 2nd Season
+weekly 2026-10-25 20:00 | Super Timid Noble Girl Cunning Fiance
+weekly 2026-10-26 20:00 | PSYREN
+weekly 2026-10-28 19:00 | The Detective Is Already Dead Season 2
+weekly 2026-10-29 22:30 | The Iceblade Sorcerer Shall Rule the World II
+weekly 2026-10-30 21:30 | Firefly Wedding
 
-# ===== ANIME TIMES / PRIME VIDEO (AIRING, par weekly hai ya nahi pakka nahi) =====
-# Pakka karke # hata do:
+# ===== NETFLIX (Hindi weekly) =====
+weekly 2026-07-08 22:00 | Thunder 3
+weekly 2026-07-16 21:30 | Chainsmoker Cat
+weekly 2026-09-25 13:30 | Steel Ball Run JoJo's Bizarre Adventure
+weekly 2026-10-01 21:00 | The Ramparts of Ice Season 2
+weekly 2026-10-03 22:30 | Ranma 1/2 Season 3
+weekly 2026-10-04 13:30 | Blue Box Season 2
+
+# ===== NETFLIX aane wale (date/time pakka hone par # hata kar time likho) =====
+# 2026-10-25 | My Happy Marriage
+# 2026-11-26 | Fool Night
+
+# ===== ANIME TIMES / PRIME VIDEO (AIRING, par time aur weekly pakka nahi) =====
 # weekly 2026-09-17 | The Frontier Lord Begins with Zero Subjects
 # weekly 2026-09-28 | Reincarnated as an Aristocrat Appraisal Skill Season 3
 # weekly 2026-08-31 | Grand Blue Dreaming Season 3
-# weekly 2026-08-29 | The Exiled Heavy Knight Knows How to Game the System
-# weekly 2026-06-02 | That Time I Got Reincarnated as a Slime Season 4
-# weekly 2026-10-24 | The Seven Knights of the Marronnier Kingdom 
-
-
-# ===== NETFLIX (ek saath poora season aata hai, weekly nahi) =====
-# Jab koi naya season aaye, ek baar wali line jodo, jaise:
-# weekly 2026-10-30 | JoJo's Bizarre Adventure: Steel Ball Run 
-# ===== CRUNCHYROLL (weekly ya batch pakka nahi) =====
-# 2026-10-10 | Black Clover
