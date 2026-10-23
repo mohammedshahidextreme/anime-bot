@@ -7,6 +7,7 @@
 #   weekly 2026-10-23 20:30 ep1 | Naam        -> post me Episode 1, agle hafte Episode 2...
 #   2026-10-23 20:00 ep5 per2 | Naam          -> ek saath 2 episode (Episodes 5-6)
 #   2026-10-28 19:30 | Naam                   -> sirf ek baar
+#   dub= likho to post me 'Dub By' line aati hai (space ki jagah _ lagao: dub=Muse_India)
 #   daily 2026-10-16 21:30 ep1 per2 | Naam    -> roz, ek din me 2 episode (Muse India jaise)
 # Dub khatam ho jaye to uski line hata do ya aage # laga do.
 # Source: animemirchi.com (23 Oct 2026)
@@ -30,18 +31,18 @@
 
 # --- CRUNCHYROLL ---
 weekly 2026-07-29 22:50 ep1 | Tomb Raider King
-weekly 2026-07-31 20:30 | That Time I Got Reincarnated as a Slime Season 4
-weekly 2026-08-07 21:30 ep1 | The Elusive Samurai Season 2
+weekly 2026-07-31 20:30 ep10 lang=Hindi,Tamil,Telugu,English,Japanese dub=Crunchyroll | That Time I Got Reincarnated as a Slime Season 4
+weekly 2026-08-07 21:30 ep1 lang=Hindi,Japanese dub=Crunchyroll | The Elusive Samurai Season 2
 weekly 2026-08-13 21:30 ep1 | The Exiled Heavy Knight Knows How to Game the System
-weekly 2026-08-15 21:30 ep1 | Jaadugar A Witch in Mongolia
-weekly 2026-08-29 18:30 ep1 | Black Torch
+weekly 2026-08-15 22:00 ep1 tot12 sn1 lang=Hindi,English,Japanese | Jaadugar A Witch in Mongolia
+weekly 2026-08-29 18:45 ep1 tot12 sn1 lang=Hindi,English,Japanese | Black Torch
 weekly 2026-08-30 16:30 ep1 | Mushoku Tensei Jobless Reincarnation Season 3
 weekly 2026-09-27 20:00 ep1 | Overgeared
 weekly 2026-10-06 21:00 ep1 | The Laid-Off Cheat-Granting Mage Enjoys a Second Lease on Life
-weekly 2026-10-07 19:30 | Re:ZERO Starting Life in Another World Season 4
+weekly 2026-10-07 19:30 ep1 | Re:ZERO Starting Life in Another World Season 4
 weekly 2026-10-10 20:30 ep1 x10 | Black Clover
-weekly 2026-10-17 19:00 ep1 | A Wild Last Boss Appeared Season 2
-weekly 2026-10-23 20:30 ep1 | The Apothecary Diaries Season 3
+weekly 2026-10-17 19:00 ep1 tot12 lang=Hindi,Tamil,Telugu,Japanese | A Wild Last Boss Appeared Season 2
+weekly 2026-10-23 20:30 ep1 lang=Hindi,Tamil,Telugu,English,Japanese dub=Crunchyroll | The Apothecary Diaries Season 3
 weekly 2026-10-24 20:30 ep1 | Black Clover 2nd Season
 weekly 2026-10-25 20:00 ep1 | Super Timid Noble Girl Cunning Fiance
 weekly 2026-10-26 20:00 ep1 | PSYREN
@@ -50,12 +51,20 @@ weekly 2026-10-29 22:30 ep1 | The Iceblade Sorcerer Shall Rule the World II
 weekly 2026-10-30 21:30 ep1 | Firefly Wedding
 
 # --- NETFLIX ---
-weekly 2026-07-08 22:00 | Thunder 3
-weekly 2026-07-16 21:30 | Chainsmoker Cat
-weekly 2026-09-25 13:30 | Steel Ball Run JoJo's Bizarre Adventure
+weekly 2026-07-08 22:00 ep1 | Thunder 3
+weekly 2026-07-16 21:30 ep1 | Chainsmoker Cat
+weekly 2026-09-25 13:30 ep2 lang=Hindi,Tamil,Telugu,English,Japanese dub=Netflix | Steel Ball Run JoJo's Bizarre Adventure
 weekly 2026-10-01 21:00 ep1 | The Ramparts of Ice Season 2
-weekly 2026-10-03 22:30 ep1 | Ranma 1/2 Season 3
+weekly 2026-10-03 22:25 ep1 tot12 lang=Hindi,English,Malayalam | Ranma 1/2 Season 3
 weekly 2026-10-04 13:30 ep1 | Blue Box Season 2
+
+# --- SCHEDULE SE (24 Oct 2026 ka schedule dekhkar likhe) ---
+weekly 2026-10-24 19:00 ep4 tot12 sn1 lang=Hindi,Japanese | The Seven Knights of the Marronnier Kingdom
+daily 2026-10-24 21:45 ep371 per2 x65 tot500 lang=Hindi,Tamil,Telugu,English,Japanese,Malayalam,Bengali dub=Sony_Yay! | Naruto Shippuden
+daily 2026-10-24 22:00 ep14 x26 tot39 sn4 lang=Hindi,English,Japanese | JoJo's Bizarre Adventure Golden Wind
+
+# --- MUSE INDIA ---
+daily 2026-10-24 22:45 ep17 per2 x3 tot22 sn3 lang=Hindi,English,Japanese dub=Muse_India | Attack on Titan Season 3
 
 # --- ANIME TIMES / PRIME VIDEO (AIRING hain, par time aur weekly pakka nahi) ---
 # Time pata chale to # hata kar time likho, jaise: weekly 2026-09-17 21:00 | ...
