@@ -185,7 +185,7 @@ def post_item(item, caption=None):
 IST = datetime.timezone(datetime.timedelta(hours=5, minutes=30))
 SPEC_RE = re.compile(
     r"^(weekly\s+|daily\s+)?(\d{4}-\d{2}-\d{2})(?:\s+(\d{1,2}:\d{2}))?(?:\s+ep(\d+))?"
-    r"(?:\s+per(\d+))?(?:\s+x(\d+))?(?:\s+tot(\d+))?(?:\s+sn(\d+))?(?:\s+lang=(\S+))?(?:\s+dub=(\S+))?$", re.I)
+    r"(?:\s+per(\d+))?(?:\s+x(\d+))?(?:\s+tot(\d+))?(?:\s+sn(\d+))?(?:\s+lang=(\S+))?$", re.I)
 META = {}  # anime naam -> {"total": N, "season": N, "langs": [..]}
 
 SEARCH_QUERY = """
@@ -241,7 +241,6 @@ def load_hindi_list():
             "total": int(m.group(7)) if m.group(7) else None,
             "season": int(m.group(8)) if m.group(8) else None,
             "langs": [x for x in (m.group(9) or "").split(",") if x],
-            "dub": (m.group(10) or "").replace("_", " "),
         }
     return entries
 
@@ -302,32 +301,33 @@ def build_hindi_caption(name, media, ep=None, meta=None):
     meta = meta or {}
     t = media.get("title") or {}
     title = t.get("english") or t.get("romaji") or name
+    score = media.get("averageScore")
+    rating = f"{score / 10:.1f}/10" if score else "N/A"
     genres = media.get("genres") or []
-    # Season: agar AniList title me nahi hai to "- Season 4" jod do
-    shown = title
-    if not season_label(title):
-        lab = season_label(name) or (f"Season {meta['season']}" if meta.get("season") else None)
-        if lab:
-            shown = f"{title} - {lab}"
-    langs = "-".join(meta["langs"]) if meta.get("langs") else \
-        "-".join(x.strip() for x in env("ANIME_LANGUAGE", "Hindi").split(",") if x.strip())
-    sub = env("ANIME_SUBTITLE", "English")
+    season = season_label(name, title) or (f"Season {meta['season']}" if meta.get("season") else None)
+    total = meta.get("total") or media.get("episodes")
+    langs = ", ".join(meta["langs"]) if meta.get("langs") else env("ANIME_LANGUAGE", "Hindi")
 
     if ep:
         ep_text = f"EPISODE {ep[0]}" if ep[0] == ep[1] else f"EPISODES {ep[0]}-{ep[1]}"
-        head = f"\U0001F525\u2728 <b><i>{ep_text} HINDI ADDED!</i></b> \u2728\U0001F525"
+        head = f"\U0001F525\u2728 <b>{ep_text} HINDI ADDED!</b> \u2728\U0001F525"
     else:
         head = "\U0001F1EE\U0001F1F3 <b>NEW HINDI DUB</b>"
 
-    lines = [head, "", "\U0001F3AC <b>Title:</b>", f"<i>{html.escape(shown)}</i>"]
-    if genres:
-        lines.append("\U0001F5E3 <b>Genre:</b> " + html.escape(" \u2022 ".join(genres)))
-    score = media.get("averageScore")
-    lines.append(f"\u2B50 <b>Rating:</b> {score / 10:.1f}/10" if score else "\u2B50 <b>Rating:</b> N/A")
-    lines.append(f"\U0001F50A <b>Audio:</b> <i>{html.escape(langs)}</i>")
-    lines.append(f"\U0001F4AC <b>Subtitle:</b> {html.escape(sub)}")
-    if meta.get("dub"):
-        lines.append(f"\U0001F399 <b>Dub By:</b> <i>{html.escape(meta['dub'])}</i>")
+    lines = [head, "", f"\U0001F3AC <b>Title:</b> {html.escape(title)}"]
+    info = []
+    if season:
+        info.append(season)
+    if ep:
+        e = f"Episode {ep[0]}" if ep[0] == ep[1] else f"Episodes {ep[0]}-{ep[1]}"
+        info.append(e + (f" / {total}" if total else ""))
+    if info:
+        lines.append("\U0001F4FA <b>" + " \u2022 ".join(info) + "</b>")
+    lines += [
+        f"\U0001F5E3 <b>Language:</b> {html.escape(langs)}",
+        f"\u2B50 <b>Rating:</b> {rating}",
+        f"\U0001F3AD <b>Category:</b> {html.escape(', '.join(genres) if genres else 'N/A')}",
+    ]
     tags = " ".join(tag(g) for g in genres)
     if tags:
         lines += ["", tags]
@@ -349,47 +349,30 @@ def releases_on(entries, day):
                 break
             if when.date() == day:
                 out.append((when, name,
-                            (ep0 + n * per, ep0 + n * per + per - 1) if ep0 else None,
-                            step, per))
+                            (ep0 + n * per, ep0 + n * per + per - 1) if ep0 else None))
             n += 1
             if not step:
                 break
     return sorted(out, key=lambda x: x[0])
 
 
-MEDIA_CACHE = {}
-
-
-def cached_media(name):
-    if name not in MEDIA_CACHE:
-        MEDIA_CACHE[name] = find_media(name) or {}
-        time.sleep(1)
-    return MEDIA_CACHE[name]
-
-
 def build_schedule_texts(day, rel):
     head = "\U0001F4C5 <b>" + f"{day:%A}".upper() + f" {ordinal(day.day)} {day:%B}</b>"
     blocks = []
-    for when, name, ep, step, per in rel:
+    for when, name, ep in rel:
         meta = META.get(name, {})
-        media = cached_media(name)
         label = season_label(name) or (f"Season {meta['season']}" if meta.get("season") else None)
         shown = html.escape(name) + (f" ({label})" if label and label.lower() not in name.lower() else "")
         lines = [f"\U0001F3AC <b>{shown}</b>", f"   \U0001F550 {when:%I:%M %p} IST"]
-        genres = media.get("genres") or []
-        if genres:
-            lines.append("   \U0001F3AD " + html.escape(", ".join(genres)))
         if meta.get("langs"):
             lines.append("   \U0001F399 " + " ".join("#" + re.sub(r"\W", "", x) for x in meta["langs"]))
         if ep:
-            total = meta.get("total") or media.get("episodes")
-            if ep[0] > 1:  # ab tak aaya hua (latest) episode
-                lines.append(f"   \U0001F4FA Episode {ep[0] - 1}" + (f" / {total}" if total else ""))
-            lines.append("   \u23ED Next: " + (f"Episode {ep[0]}" if ep[0] == ep[1] else f"Episodes {ep[0]}-{ep[1]}"))
-        kind = "Weekly" if step == 7 else "Daily" if step == 1 else "Once"
-        lines.append(f"   \U0001F4CA {kind} | {per} ep(s)/release")
+            e = f"Episode {ep[0]}" if ep[0] == ep[1] else f"Episodes {ep[0]}-{ep[1]}"
+            if meta.get("total"):
+                e += f" / {meta['total']}"
+            lines.append(f"   \U0001F4FA {e}")
         blocks.append("\n".join(lines))
-    foot = "\u2501" * 12 + "\n\U0001F4FA Daily Anime Schedule\n\U0001F310 Watch Animes Here: sugoix.shop"
+    foot = "\u2501" * 12 + "\n\U0001F4FA Daily Anime Schedule\n\U0001F310 sugoix.shop"
     texts, cur = [], head
     for b in blocks:
         if len(cur) + len(b) + 20 > 3800:
@@ -400,25 +383,42 @@ def build_schedule_texts(day, rel):
     return texts
 
 
-def daily_schedule(state, now, entries):
-    hour = int(env("SCHEDULE_HOUR", "8"))
-    today = now.date()
-    if now.hour < hour or state.get("schedule_date") == str(today):
-        return True
-    rel = releases_on(entries, today)
+def _send_schedule(day, rel):
     ok = True
-    if rel:
-        channel = env("TELEGRAM_CHANNEL")
-        for text in build_schedule_texts(today, rel):
-            res = tg("sendMessage", {"chat_id": channel, "text": text, "parse_mode": "HTML",
-                                     "disable_web_page_preview": True})
-            if not res.get("ok"):
-                print("[error] schedule post:", res.get("description"))
-                ok = False
-            time.sleep(2)
-    if ok:
-        state["schedule_date"] = str(today)
-        print(f"[schedule] {len(rel)} release aaj ({today})")
+    channel = env("TELEGRAM_CHANNEL")
+    for text in build_schedule_texts(day, rel):
+        res = tg("sendMessage", {"chat_id": channel, "text": text, "parse_mode": "HTML",
+                                 "disable_web_page_preview": True})
+        if not res.get("ok"):
+            print("[error] schedule post:", res.get("description"))
+            ok = False
+        time.sleep(2)
+    return ok
+
+
+def daily_schedule(state, now, entries):
+    """Aaj ka last episode post hone ke baad agle din ka schedule post karta hai.
+    (Pehli baar / bina schedule ke din: subah SCHEDULE_HOUR ke baad aaj ka bhi.)"""
+    hour = int(env("SCHEDULE_HOUR", "8"))
+    sent = state.setdefault("schedule_dates", [])
+    today = now.date()
+    tomorrow = today + datetime.timedelta(days=1)
+    rel_today = releases_on(entries, today)
+    targets = []
+    if str(today) not in sent and now.hour >= hour and rel_today:
+        targets.append(today)
+    last = rel_today[-1][0] + datetime.timedelta(minutes=10) if rel_today else None
+    if str(tomorrow) not in sent and ((last and now >= last) or (not rel_today and now.hour >= hour)):
+        targets.append(tomorrow)
+    ok = True
+    for day in targets:
+        rel = releases_on(entries, day)
+        if rel and not _send_schedule(day, rel):
+            ok = False
+            continue
+        sent.append(str(day))
+        print(f"[schedule] {day}: {len(rel)} release")
+    state["schedule_dates"] = sent[-6:]
     return ok
 
 
