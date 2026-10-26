@@ -529,12 +529,129 @@ def collect_entries():
     return entries + auto
 
 
+# ---------- Auto: Telegram channel ke schedule messages se ----------
+MONTHS = {m: i for i, m in enumerate(
+    ["january", "february", "march", "april", "may", "june", "july", "august",
+     "september", "october", "november", "december"], 1)}
+
+
+def parse_schedule_msg(text, now):
+    """Ek 'Daily Anime Schedule' message ko entries me badalta hai.
+    Return: list of (entry_tuple, meta_dict, date)."""
+    m = re.search(r"(\d{1,2})(?:st|nd|rd|th)?\s+([A-Za-z]+)", text.split("\n", 1)[0])
+    if not m or m.group(2).lower() not in MONTHS:
+        return []
+    day, month = int(m.group(1)), MONTHS[m.group(2).lower()]
+    year = now.year + (1 if month < now.month - 6 else -1 if month > now.month + 6 else 0)
+    out = []
+    for block in text.split("\U0001F3AC")[1:]:
+        lines = block.strip().split("\n")
+        name = re.sub(r"^[^\w]+", "", lines[0]).strip()
+        sm = re.search(r"\(\s*Se\w*n\s*(\d+)\s*\)\s*$", name, re.I)
+        sn = int(sm.group(1)) if sm else None
+        if sm:
+            name = name[:sm.start()].strip()
+        tm = re.search(r"(\d{1,2}):(\d{2})\s*(AM|PM)", block, re.I)
+        if not name or not tm:
+            continue
+        hh = int(tm.group(1)) % 12 + (12 if tm.group(3).upper() == "PM" else 0)
+        start = datetime.datetime(year, month, day, hh, int(tm.group(2)), tzinfo=IST)
+        langs = re.findall(r"#(\w+)", "\n".join(l for l in lines if "#" in l))
+        tot = re.search(r"Episodes?\s*(\d+)\s*/\s*(\d+)", block)
+        nx = re.search(r"Next:\s*Episodes?\s*(\d+)(?:\s*-\s*(\d+))?", block)
+        pm = re.search(r"(\d+)\s*ep\(s\)", block)
+        total = int(tot.group(2)) if tot else None
+        if nx:
+            ep0 = int(nx.group(1))
+            per = int(nx.group(2)) - ep0 + 1 if nx.group(2) else (int(pm.group(1)) if pm else 1)
+        else:
+            ep0, per = (1, int(pm.group(1)) if pm else 1) if re.search(r"Starting soon|Upcoming", block, re.I) else (None, 1)
+        daily = bool(re.search(r"\bDaily\b", block.split("\n\n")[0] + block[-200:])) and "Weekly" not in block
+        step = 1 if daily else 7
+        count = None
+        if total and ep0:
+            count = max(0, -(-(total - ep0 + 1) // per))
+        out.append(((name, start, step, count, ep0, per),
+                    {"total": total, "season": sn, "langs": langs}, start.date()))
+    return out
+
+
+def fetch_tg_messages(source, pages=3):
+    texts, url = [], f"https://t.me/s/{source}"
+    for _ in range(pages):
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=30) as r:
+            page = r.read().decode("utf-8", "replace")
+        chunk = []
+        for mm in re.finditer(r'<div class="tgme_widget_message_text[^"]*"[^>]*>(.*?)</div>', page, re.S):
+            t = re.sub(r"<br\s*/?>", "\n", mm.group(1))
+            chunk.append(html.unescape(re.sub(r"<[^>]+>", "", t)))
+        texts = chunk + texts
+        ids = [int(x) for x in re.findall(r'data-post="[^"/]+/(\d+)"', page)]
+        if not ids:
+            break
+        url = f"https://t.me/s/{source}?before={min(ids)}"
+    return texts
+
+
+def sync_schedule(state, now):
+    """Source channel se schedule padhkar state['synced'] me rakhta hai (har ~50 min)."""
+    src = env("SCHEDULE_SOURCE", "HindiAnimeZonecom")
+    if not src:
+        return
+    last = state.get("sync_at")
+    if last and state.get("synced") and (now - datetime.datetime.fromisoformat(last)).total_seconds() < 3000:
+        return
+    try:
+        best = {}
+        for text in fetch_tg_messages(src):
+            if "\U0001F4C5" not in text or "\U0001F3AC" not in text:
+                continue
+            for entry, meta, d in parse_schedule_msg(text, now):
+                k = entry[0].lower()
+                if k not in best or d >= best[k][2]:
+                    best[k] = (entry, meta, d)
+        if best:
+            state["synced"] = [
+                {"e": [e[0], e[1].isoformat(), e[2], e[3], e[4], e[5]], "m": m}
+                for e, m, _ in best.values()]
+            state["sync_at"] = now.isoformat()
+        print(f"[sync] {src}: {len(best)} anime mile")
+    except Exception as ex:
+        print(f"[sync] fail ({ex}); purana data chalega")
+
+
+def _norm(n):
+    return re.sub(r"[^a-z0-9]", "", re.sub(r"season|\d+(st|nd|rd|th)", "", n.lower()))
+
+
+def _same(a, b):
+    import difflib
+    x, y = _norm(a), _norm(b)
+    return x == y or (min(len(x), len(y)) >= 8 and (x in y or y in x)) or difflib.SequenceMatcher(None, x, y).ratio() >= 0.8
+
+
+def merge_synced(entries, state):
+    synced = []
+    for row in state.get("synced", []):
+        n, st, step, cnt, ep0, per = row["e"]
+        synced.append((n, datetime.datetime.fromisoformat(st), step, cnt, ep0, per))
+        META[n] = row["m"]
+    if not synced:
+        return entries
+    if env("SCHEDULE_MODE", "merge") == "only":
+        return synced
+    keep = [e for e in entries if not any(_same(e[0], s[0]) for s in synced)]
+    return keep + synced
+
+
 def hindi_once():
     state = load_state()
     now = datetime.datetime.now(IST)
     window = float(env("HINDI_WINDOW_HOURS", "48"))
     posted = list(state.get("hindi_posted", []))
-    entries = collect_entries()
+    sync_schedule(state, now)
+    entries = merge_synced(collect_entries(), state)
     due = [d for d in hindi_due(entries, now, window) if d[0] not in posted]
     print(f"[hindi] {len(due)} post due")
     failed = not daily_schedule(state, now, entries)
