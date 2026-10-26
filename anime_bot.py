@@ -423,7 +423,7 @@ def daily_schedule(state, now, entries):
 
 
 # ---------- Auto: websites se Hindi dub schedule padhna ----------
-MONTHS = {m: i + 1 for i, m in enumerate(
+AUTO_MONTHS = {m: i + 1 for i, m in enumerate(
     ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"])}
 DAYS = {d: i for i, d in enumerate(["mon", "tue", "wed", "thu", "fri", "sat", "sun"])}
 DATE_RE = re.compile(r"\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.? (\d{1,2}), (\d{4})")
@@ -493,7 +493,7 @@ def parse_auto_rows(page):
         dk = sm.group("day").lower()[:3]
         step = 1 if dk == "dai" else 7
         hh = int(sm.group("h")) % 12 + (12 if sm.group("ap").upper() == "PM" else 0)
-        start = datetime.datetime(int(year), MONTHS[mon.lower()], int(day), hh,
+        start = datetime.datetime(int(year), AUTO_MONTHS[mon[:3].lower()], int(day), hh,
                                   int(sm.group("m")), tzinfo=IST)
         if step == 7 and start.weekday() != DAYS[dk]:
             print(f"[auto] din match nahi hua, chhoda: {name}")
