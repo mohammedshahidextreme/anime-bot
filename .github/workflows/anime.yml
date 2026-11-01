@@ -3,6 +3,8 @@ name: Anime updates
 on:
   schedule:
     - cron: "*/5 * * * *"
+  repository_dispatch:
+    types: [episode-update]
   workflow_dispatch:
     inputs:
       mode:
@@ -31,6 +33,7 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHANNEL: ${{ secrets.TELEGRAM_CHANNEL }}
+          ALERT_CHAT_ID: ${{ secrets.ALERT_CHAT_ID }}
           ANIME_LANGUAGE: "English, Hindi, Tamil, Telugu, Japanese (Sub)"
         run: python anime_bot.py ${{ github.event.inputs.mode || 'once' }}
       - name: Save state
@@ -38,5 +41,6 @@ jobs:
         run: |
           git config user.name "anime-bot"
           git config user.email "anime-bot@users.noreply.github.com"
+          git pull --rebase --autostash || true
           git add -f data/state.json || true
           git diff --cached --quiet || (git commit -m "state update" && git push)
