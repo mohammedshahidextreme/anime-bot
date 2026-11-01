@@ -532,7 +532,7 @@ def collect_entries():
 
 
 # ---------- Auto: Telegram channel ke schedule messages se ----------
-MONTHS = {m: i for i, m in enumerate(
+FULL_MONTHS = {m: i for i, m in enumerate(
     ["january", "february", "march", "april", "may", "june", "july", "august",
      "september", "october", "november", "december"], 1)}
 
@@ -541,9 +541,9 @@ def parse_schedule_msg(text, now):
     """Ek 'Daily Anime Schedule' message ko entries me badalta hai.
     Return: list of (entry_tuple, meta_dict, date)."""
     m = re.search(r"(\d{1,2})(?:st|nd|rd|th)?\s+([A-Za-z]+)", text.split("\n", 1)[0])
-    if not m or m.group(2).lower() not in MONTHS:
+    if not m or m.group(2).lower() not in FULL_MONTHS:
         return []
-    day, month = int(m.group(1)), MONTHS[m.group(2).lower()]
+    day, month = int(m.group(1)), FULL_MONTHS[m.group(2).lower()]
     year = now.year + (1 if month < now.month - 6 else -1 if month > now.month + 6 else 0)
     out = []
     for block in text.split("\U0001F3AC")[1:]:
