@@ -155,12 +155,14 @@ def build_caption(item):
     return caption[:1024]  # Telegram photo caption limit
 
 
-def post_item(item, caption=None):
+def post_item(item, caption=None, button=None):
     channel = env("TELEGRAM_CHANNEL")
     if not channel:
         sys.exit("TELEGRAM_CHANNEL .env me set nahi hai (jaise @mychannel).")
     caption = caption or build_caption(item)
     markup = {"inline_keyboard": [[{"text": "Website", "url": "https://sugoix.shop/"}]]}
+    if button:
+        markup = {"inline_keyboard": [[{"text": button[0], "url": button[1]}]]}
     cover = item["media"].get("coverImage") or {}
     poster = cover.get("extraLarge") or cover.get("large")
 
@@ -300,7 +302,7 @@ def build_hindi_caption(name, media, ep=None, meta=None):
     media = media or {}
     meta = meta or {}
     t = media.get("title") or {}
-    title = t.get("english") or t.get("romaji") or name
+    title = meta.get("title") or t.get("english") or t.get("romaji") or name
     score = media.get("averageScore")
     rating = f"{score / 10:.1f}/10" if score else "N/A"
     genres = media.get("genres") or []
@@ -423,7 +425,7 @@ def daily_schedule(state, now, entries):
 
 
 # ---------- Auto: websites se Hindi dub schedule padhna ----------
-AUTO_MONTHS = {m: i + 1 for i, m in enumerate(
+MONTHS = {m: i + 1 for i, m in enumerate(
     ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"])}
 DAYS = {d: i for i, d in enumerate(["mon", "tue", "wed", "thu", "fri", "sat", "sun"])}
 DATE_RE = re.compile(r"\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.? (\d{1,2}), (\d{4})")
@@ -493,7 +495,7 @@ def parse_auto_rows(page):
         dk = sm.group("day").lower()[:3]
         step = 1 if dk == "dai" else 7
         hh = int(sm.group("h")) % 12 + (12 if sm.group("ap").upper() == "PM" else 0)
-        start = datetime.datetime(int(year), AUTO_MONTHS[mon[:3].lower()], int(day), hh,
+        start = datetime.datetime(int(year), MONTHS[mon.lower()], int(day), hh,
                                   int(sm.group("m")), tzinfo=IST)
         if step == 7 and start.weekday() != DAYS[dk]:
             print(f"[auto] din match nahi hua, chhoda: {name}")
@@ -645,6 +647,122 @@ def merge_synced(entries, state):
     return keep + synced
 
 
+# ---------- Website (sugoix.shop) se naye episodes ----------
+SITE_DEFAULT = "https://sugoix.shop/data/episodes.json"
+MEDIA_QUERY = """
+query ($id: Int) {
+  Media(id: $id, type: ANIME) {
+    id isAdult format episodes averageScore genres
+    title { romaji english native }
+    coverImage { extraLarge large }
+  }
+}
+"""
+
+
+def media_by_id(mid):
+    res = http_json(ANILIST, {"query": MEDIA_QUERY, "variables": {"id": int(mid)}})
+    try:
+        return res["data"]["Media"]
+    except Exception:
+        return None
+
+
+def fetch_site(url):
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 anime-channel-bot"})
+    with urllib.request.urlopen(req, timeout=30) as r:
+        return json.load(r)
+
+
+def _site_langs(anime, season, ep, title):
+    for obj in (ep, season, anime):
+        for k in ("languages", "langs", "audio"):
+            v = obj.get(k)
+            if isinstance(v, str):
+                v = [x.strip() for x in re.split(r"[,/|]", v) if x.strip()]
+            if v:
+                return list(v)
+    for n, m in META.items():  # schedule se mile hue naam
+        if m.get("langs") and _same(n, title):
+            return m["langs"]
+    return ["Hindi"]
+
+
+def _runs(nums):
+    nums = sorted(nums)
+    runs, cur = [], [nums[0]]
+    for n in nums[1:]:
+        if n == cur[-1] + 1:
+            cur.append(n)
+        else:
+            runs.append(cur)
+            cur = [n]
+    runs.append(cur)
+    return runs
+
+
+def site_once(state, now):
+    """Website ki episodes.json padhkar naye episodes channel par post karta hai."""
+    url = env("SITE_JSON", SITE_DEFAULT)
+    try:
+        data = fetch_site(url)
+    except Exception as ex:
+        print(f"[site] json nahi mili ({ex})")
+        return False
+    items = {}
+    for a in data.get("animes", []):
+        for sn in a.get("seasons", []):
+            for e in sn.get("episodes", []):
+                try:
+                    added = datetime.datetime.fromisoformat(
+                        (e.get("added") or "").replace("Z", "+00:00"))
+                except Exception:
+                    added = now
+                items[f"{a.get('slug')}|{sn.get('season')}|{e.get('episode')}"] = (a, sn, e, added)
+    posted = set(state.get("site_posted", []))
+    if "site_posted" not in state:  # pehli baar: purane episodes ko 'ho chuka' maan lo
+        hrs = float(env("SITE_BACKFILL_HOURS", "0"))
+        for k, (_, _, _, added) in items.items():
+            if (now - added).total_seconds() > hrs * 3600:
+                posted.add(k)
+        print(f"[site] pehli baar: {len(posted)} purane episode chhod diye")
+    new = {k: v for k, v in items.items() if k not in posted}
+    print(f"[site] {len(items)} episode site par, {len(new)} naye")
+    groups = {}
+    for k, (a, sn, e, _) in new.items():
+        groups.setdefault((a.get("slug"), sn.get("season")), []).append((e.get("episode"), k, a, sn, e))
+    failed = False
+    for (slug, season), rows in groups.items():
+        rows = [r for r in rows if isinstance(r[0], int)]
+        if not rows:
+            continue
+        by_ep = {r[0]: r for r in rows}
+        for run in _runs(by_ep):
+            _, _, a, sn, e = by_ep[run[0]]
+            title = a.get("title") or slug
+            aid = (a.get("anilist") or {}).get(str(season))
+            media = (media_by_id(aid) if aid else None) or find_media(title) or {}
+            if media.get("isAdult"):
+                posted.update(by_ep[n][1] for n in run)
+                continue
+            if a.get("poster"):
+                media = dict(media, coverImage={"extraLarge": a["poster"]})
+            meta = {"title": title, "season": season, "langs": _site_langs(a, sn, e, title)}
+            link = f"https://sugoix.shop/pages/watch.html?id={aid or media.get('id', '')}&ep={run[0]}"
+            ok, res = post_item({"media": media},
+                                build_hindi_caption(title, media, (run[0], run[-1]), meta),
+                                ("\u25B6\uFE0F Watch Now", link))
+            if ok:
+                posted.update(by_ep[n][1] for n in run)
+                print(f"[post] {title} S{season} ep{run[0]}-{run[-1]}")
+            else:
+                failed = True
+                print(f"[error] {title}: {res.get('description')}")
+            time.sleep(3)
+    state["site_posted"] = sorted(posted)[-3000:]
+    return failed
+
+
 def hindi_once():
     state = load_state()
     now = datetime.datetime.now(IST)
@@ -652,9 +770,12 @@ def hindi_once():
     posted = list(state.get("hindi_posted", []))
     sync_schedule(state, now)
     entries = merge_synced(collect_entries(), state)
-    due = [d for d in hindi_due(entries, now, window) if d[0] not in posted]
-    print(f"[hindi] {len(due)} post due")
+    site_mode = bool(env("SITE_JSON", SITE_DEFAULT))
+    due = [] if site_mode else [d for d in hindi_due(entries, now, window) if d[0] not in posted]
+    print(f"[hindi] {len(due)} post due" + (" (site mode: schedule se post band)" if site_mode else ""))
     failed = not daily_schedule(state, now, entries)
+    if site_mode:
+        failed = site_once(state, now) or failed
     for key, name, ep in due:
         media = find_media(name) or {}
         ok, res = post_item({"media": media}, build_hindi_caption(name, media, ep, META.get(name)))
