@@ -647,6 +647,29 @@ def merge_synced(entries, state):
     return keep + synced
 
 
+# ---------- Alerts (aapke Telegram par) ----------
+ERRORS = []
+
+
+def send_alert(state, text, key):
+    """Galti ka message owner ko bhejta hai (ek hi galti 6 ghante me ek baar)."""
+    chat = env("ALERT_CHAT_ID")
+    if not chat:
+        return
+    alerts = state.setdefault("alerts", {})
+    if time.time() - alerts.get(key, 0) < 6 * 3600:
+        return
+    tok = env("TELEGRAM_BOT_TOKEN")
+    msg = ("\u26A0\uFE0F Anime bot: " + text)[:500]
+    if tok:
+        msg = msg.replace(tok, "***")
+    res = tg("sendMessage", {"chat_id": chat, "text": msg})
+    if res.get("ok"):
+        alerts[key] = time.time()
+    else:
+        print("[alert] nahi gaya:", res.get("description"))
+
+
 # ---------- Website (sugoix.shop) se naye episodes ----------
 SITE_DEFAULT = "https://sugoix.shop/data/episodes.json"
 MEDIA_QUERY = """
@@ -674,6 +697,10 @@ def fetch_site(url):
         return json.load(r)
 
 
+LANG_WORDS = ["Hindi", "English", "Tamil", "Telugu", "Malayalam", "Kannada", "Bengali", "Marathi",
+              "Japanese", "Korean", "Spanish", "Portuguese", "French", "German", "Chinese"]
+
+
 def _site_langs(anime, season, ep, title):
     for obj in (ep, season, anime):
         for k in ("languages", "langs", "audio"):
@@ -682,6 +709,14 @@ def _site_langs(anime, season, ep, title):
                 v = [x.strip() for x in re.split(r"[,/|]", v) if x.strip()]
             if v:
                 return list(v)
+    found = []
+    for sv in ep.get("servers") or []:
+        cand = [str(sv.get(k, "")) for k in ("lang", "language", "audio", "label", "name")]
+        for w in LANG_WORDS:
+            if any(re.search(rf"\b{w}\b", c, re.I) for c in cand) and w not in found:
+                found.append(w)
+    if found:
+        return found
     for n, m in META.items():  # schedule se mile hue naam
         if m.get("langs") and _same(n, title):
             return m["langs"]
@@ -707,8 +742,13 @@ def site_once(state, now):
     try:
         data = fetch_site(url)
     except Exception as ex:
-        print(f"[site] json nahi mili ({ex})")
+        n = state.get("site_fail", 0) + 1
+        state["site_fail"] = n
+        print(f"[site] json nahi mili ({ex}) [{n}]")
+        if n >= 6:
+            send_alert(state, f"sugoix.shop ki episodes.json nahi khul rahi ({ex})", "site")
         return False
+    state["site_fail"] = 0
     items = {}
     for a in data.get("animes", []):
         for sn in a.get("seasons", []):
@@ -758,6 +798,7 @@ def site_once(state, now):
             else:
                 failed = True
                 print(f"[error] {title}: {res.get('description')}")
+                ERRORS.append(f"post fail '{title}': {res.get('description')}")
             time.sleep(3)
     state["site_posted"] = sorted(posted)[-3000:]
     return failed
@@ -787,6 +828,8 @@ def hindi_once():
             print(f"[error] {name}: {res.get('description')}")
         time.sleep(3)
     state["hindi_posted"] = posted[-2000:]
+    for e in ERRORS:
+        send_alert(state, e, e[:40])
     save_state(state)
     return not failed
 
@@ -831,7 +874,13 @@ def save_state(state):
 # ---------- main logic ----------
 def once():
     if env("HINDI_ONLY", "1") == "1":  # India me Hindi dub release par post
-        return hindi_once()
+        try:
+            return hindi_once()
+        except Exception as ex:
+            st = load_state()
+            send_alert(st, f"bot crash: {type(ex).__name__}: {ex}", "crash")
+            save_state(st)
+            raise
     state = load_state()
     now = int(time.time())
     last = state.get("last_check")
